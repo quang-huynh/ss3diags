@@ -63,7 +63,7 @@
 #' @param indexQdigits Number of significant digits for catchability in legend
 #' @author Henning Winker (JRC-EC) and Laurance Kell (Sea++)
 #' @export
-SSplotRetro<- function(summaryoutput, subplots=c("SSB","F"),
+SSplotRetro<- function(summaryoutput, subplots=c("SSB","F","recruits","recdevs"),
                         plot=TRUE,print=FALSE,png=print,pdf=FALSE,
                         models="all",
                         endyrvec="default",
@@ -222,6 +222,20 @@ SSplotRetro<- function(summaryoutput, subplots=c("SSB","F"),
     
   }
     
+    if (quant=="recruits") {
+      mu <- summaryoutput$recruits
+      Lower <- summaryoutput$recruitsLower
+      Upper <- summaryoutput$recruitsUpper
+      if (is.null(labels)) labels <- "Recruitment"
+    }
+    
+    if (quant=="recdevs") {
+      mu <- summaryoutput$recdevs
+      Lower <- summaryoutput$recdevsLower
+      Upper <- summaryoutput$recdevsUpper
+      if (is.null(labels)) labels <- "log Recruitment deviations"
+    }
+    
 
     ylab = labels
       
@@ -277,7 +291,7 @@ SSplotRetro<- function(summaryoutput, subplots=c("SSB","F"),
       
     
     # Check if uncertainty is measured
-    if(uncertainty ==TRUE & sum(exp[,1]-lower[,1])==0){
+    if(uncertainty ==TRUE & sum(exp[,1]-lower[,1], na.rm = TRUE)==0){
       if(verbose) cat("No uncertainty estimates available from the provided")
       uncertainty=FALSE
     }
@@ -295,8 +309,16 @@ SSplotRetro<- function(summaryoutput, subplots=c("SSB","F"),
         xmin = min(xmin,min(endyrvec)-3)  
       }
     
-        
-    if(is.null(ylim)) ylim <- c(0,max(ifelse(uncertainty,max(c(unlist(exp[exp$Yr>=xmin,1:nlines]),unlist(upper[upper$Yr>=xmin,1])))*ylimAdj, ylimAdj*max(unlist(exp[exp$Yr>=xmin,1:nlines]))*1.05)))
+    if(is.null(ylim)) {
+      ylim <- c(
+        0,
+        max(ifelse(uncertainty,
+                   max(c(unlist(exp[exp$Yr>=xmin,1:nlines]),unlist(upper[upper$Yr>=xmin,1])), na.rm = TRUE)*ylimAdj, 
+                   ylimAdj*max(unlist(exp[exp$Yr>=xmin,1:nlines]), na.rm = TRUE)*1.05))
+      )
+      
+      if (quant == "recdevs") ylim[1] <- -1 * ylim[2]
+    }
     if(is.null(xlim)) xlim <- c(max(min(yr),xmin),min(c(max(yr),max(endyrvec+0.5))))
     
     # hindcast section

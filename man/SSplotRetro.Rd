@@ -6,7 +6,7 @@
 \usage{
 SSplotRetro(
   summaryoutput,
-  subplots = c("SSB", "F"),
+  subplots = c("SSB", "F", "recruits", "recdevs"),
   plot = TRUE,
   print = FALSE,
   png = print,
